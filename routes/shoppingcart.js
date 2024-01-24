@@ -4,29 +4,39 @@ const {
   validateShoppingCart,
   ShoppingCart,
 } = require("../models/shoppingcart");
+const { auth } = require("../middleware/auth");
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
-    let { error } = validateShoppingCart(req.body);
+    let data = {
+      user: req.user._id,
+      product: req.body.product
+    }
+    let { error } = validateShoppingCart(data);
     if (error) {
       return res.status(400).send("Invalid body for post request!");
     }
-    let shoppingCart = new ShoppingCart(req.body);
-    shoppingCart.save();
-    return res.status(201).send(shoppingCart);
+    
+    let shoppingCart = new ShoppingCart(data);
+    await shoppingCart.save();
+    res.status(201).send(shoppingCart);
   } catch (error) {
-    return res.status(500).send(`Internal Server Error ${error}`);
+    res.status(500).send(`Internal Server Error ${error}`);
   }
 });
 
-router.get("/:username", async (req, res) => {
+
+
+router.get("/", auth, async (req, res) => {
   try {
-    let username = req.params.username;
-    let cartItems = await ShoppingCart.find({ user: username }).populate("product");
-    return res.status(200).send(cartItems);
+    let user = req.user._id;
+    let cartItems = await ShoppingCart.find({ user: user }).populate(
+      "product"
+    );
+    res.status(200).send(cartItems);
   } catch (er) {
     console.log(er);
-    return res.status(500).send(er);
+    res.status(500).send(er);
   }
 });
 
