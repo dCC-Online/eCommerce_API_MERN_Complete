@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 const Joi = require("joi");
 
 const shoppingCartSchema = new Schema({
-  user: { type: String, required: true },
+  user: String,
   product: { type: Schema.Types.ObjectId, ref: "Product" },
 });
 
